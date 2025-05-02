@@ -23,14 +23,14 @@ def fetch_nyt():
         'title': article['title'],
         'abstract': article.get('abstract', ''),
         'url': article['url']
-    } for article in articles[:5]]
+    } for article in articles[:3]]
 
 def fetch_guardian():
     url = 'https://content.guardianapis.com/search'
     params = {
         'api-key': guardian_key,
         'show-fields': 'headline,trailText',
-        'page-size': 5
+        'page-size': 3
     }
     response = requests.get(url, params=params)
     articles = response.json().get('response', {}).get('results', [])
