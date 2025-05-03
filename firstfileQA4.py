@@ -18,7 +18,7 @@ def fetch_nyt():
     articles = response.json().get('results', [])
 
     print("\n🗞️ New York Times Top Stories:")
-    for article in articles[:5]:  # Limit to top 5
+    for article in articles[:3]:  # Limit to top 3
         print(f"- {article['title']}\n  Link: {article['url']}\n")
 
 # Fetch from The Guardian
@@ -27,7 +27,7 @@ def fetch_guardian():
     params = {
         'api-key': guardian_key,
         'show-fields': 'headline',
-        'page-size': 5
+        'page-size': 3
     }
     response = requests.get(url, params=params)
     articles = response.json().get('response', {}).get('results', [])
@@ -39,3 +39,5 @@ def fetch_guardian():
 # Run both
 fetch_nyt()
 fetch_guardian()
+
+import openai
