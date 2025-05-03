@@ -9,6 +9,11 @@ openai_key = os.getenv("open_ai_key")
 nyt_key = os.getenv("nytimes_api_key")
 guardian_key = os.getenv("guardian_api_key")
 
+sender_email = os.getenv("sender_email")
+recipient_email = os.getenv("recipient_email")
+email_password = os.getenv("email_password")
+
+
 # Initialize OpenAI client
 client = OpenAI(api_key=openai_key)
 
@@ -74,3 +79,60 @@ if __name__ == "__main__":
 
     summarize_articles(nyt_articles, "The New York Times")
     summarize_articles(guardian_articles, "The Guardian")
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def create_email_content(all_articles):
+    body = ""
+    for source, articles in all_articles.items():
+        body += f"\n=== {source} ===\n\n"
+        for article in articles:
+            body += f"{article['title']}\n{article['url']}\nSummary: {article['summary']}\n\n"
+    return body
+
+def send_email(subject, body, sender_email, recipient_email, smtp_server, smtp_port, login, password):
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = recipient_email
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))  # Or 'html' for HTML content
+
+    with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+        server.login(login, password)
+        server.send_message(msg)
+        print("✅ Email sent successfully.")
+
+# Example usage in your main block
+if __name__ == "__main__":
+    nyt_articles = fetch_nyt()
+    guardian_articles = fetch_guardian()
+
+    # Summarize and attach summaries
+    for article in nyt_articles:
+        full_text = f"{article['title']}\n\n{article['abstract']}"
+        article['summary'] = summarize_text(full_text)
+
+    for article in guardian_articles:
+        full_text = f"{article['title']}\n\n{article['abstract']}"
+        article['summary'] = summarize_text(full_text)
+
+    all_articles = {
+        "The New York Times": nyt_articles,
+        "The Guardian": guardian_articles
+    }
+
+    email_body = create_email_content(all_articles)
+
+send_email(
+    subject="🗞️ Daily News Summaries",
+    body=email_body,
+    sender_email=sender_email,
+    recipient_email=recipient_email,
+    smtp_server="smtp.gmail.com",
+    smtp_port=465,
+    login=sender_email,
+    password=email_password
+)
